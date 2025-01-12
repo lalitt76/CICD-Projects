@@ -1,0 +1,46 @@
+---
+- name: create confluence and postgres users on confluence server
+  ansible.builtin.user:
+    name: "{{ item }}"
+    shell: /bin/bash  # set the user’s shell.
+  loop:
+    - "{{ confluence.user }}"
+    - "{{ db.user }}"
+
+- name: elevate confluence user as sudoer
+  ansible.builtin.template:
+    src: confluence-user.j2
+    dest: "/etc/sudoers.d/{{ confluence.user }}"
+
+- name: create confluence media, install, local and shared home directories
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.src }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    recurse: yes
+  loop:
+    - { src: "{{confluence.media}}", owner: "root", group: "root", mode: "0755" }
+    - { src: "{{confluence.install}}", owner: "{{confluence.user}}", group: "{{confluence.group}}", mode: "u=rwx,go-rwx" }
+    - { src: "{{confluence.local_home}}", owner: "{{confluence.user}}", group: "{{confluence.group}}", mode: "u=rwx,go-rwx" }
+    - { src: "{{confluence.shared_home}}", owner: "{{confluence.user}}", group: "{{confluence.group}}", mode: "u=rwx,go-rwx" }
+
+- name: download confluence and jdk binary files from s3 bucket
+  amazon.aws.s3_object:
+    region: "{{ region.name }}"
+    bucket: "{{ s3.bucket }}"
+    object: "{{ s3.object }}/{{ item }}"
+    dest: "{{ confluence.media }}/{{ item }}"
+    mode: get
+    overwrite: different # will not download file if file checksum match
+  loop:
+    - "atlassian-confluence-{{ confluence.version }}.tar"
+    - "jdk-{{ confluence.jdk }}_linux-x64_bin.rpm"
+
+- name: setup postgres connection file
+  ansible.builtin.template:
+    src: pgpass.j2
+    dest: "/home/{{ db.user }}/.pgpass"
+    owner: "{{ db.user }}"
+    mode: "400"

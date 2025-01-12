@@ -1,0 +1,45 @@
+---
+- name: Get information about rds instance
+  amazon.aws.rds_instance_info:
+    region: "{{ region.name }}"
+    db_instance_identifier: "{{ db.instance_id }}"
+  register: db_info
+
+- name: set fact for rds endpoint address
+  ansible.builtin.set_fact: db_instance_endpoint="{{ db_info.instances[0]['endpoint']['address'] }}"
+
+- ansible.builtin.debug:
+    msg: "{{ db_instance_endpoint }}"
+
+- name: create a new database with specific encoding and locale # settings
+  become_user: "{{ db.user }}"
+  community.postgresql.postgresql_db:
+    login_host: "{{ db_instance_endpoint }}"
+    name: "{{ db.name }}"
+    encoding: UTF8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+  register: db_status
+  notify:
+    - restart confluence
+
+- name: block to execute on first start of confluence
+  when: db_status.changed
+  block:
+    - name: flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: check if confluence is ready for web connection
+      ansible.builtin.wait_for:
+        path: "{{ confluence.log }}"
+        search_regex: init Confluence is ready to serve
+        sleep: 2
+      register: wait_for_ready
+
+    - ansible.builtin.debug:
+        msg: "{{ wait_for_ready }}"
+  rescue:
+    - name: print the error for above block failure
+      ansible.builtin.debug:
+        msg: "confluence user failed to initialize confluence. check the log file {{ confluence.log }}"

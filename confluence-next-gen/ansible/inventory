@@ -1,0 +1,10 @@
+web01 ansible_host=3.81.218.245 ansible_user=ec2-user ansible_ssh_private_key_file=~/key/devops-key.pem
+web02 ansible_host=44.212.51.26 ansible_user=ec2-user ansible_ssh_private_key_file=~/key/devops-key.pem
+
+[confluence]
+web01
+web02
+
+#[synchrony]
+#syn01
+#syn02

@@ -1,0 +1,10 @@
+---
+- ansible.builtin.debug:
+    msg: "restarting confluence on secondary server"
+  notify:
+    - restart confluence
+  changed_when: true
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+

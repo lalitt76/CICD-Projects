@@ -1,0 +1,30 @@
+- name: find existing confluence efs meta data
+  community.aws.efs_info:
+    region: "{{ region.name }}"
+    tags:
+      Project: "{{ confluence.efs_tag }}"
+  register: efs_result
+
+- name: set fact for the efs file system id
+  ansible.builtin.set_fact:
+    efs_id: "{{ efs_result.efs[0]['mount_targets'][0]['file_system_id']}}"
+    efs_dns: "{{ efs_result.efs[0]['filesystem_address'] }}"
+
+- ansible.builtin.debug:
+    msg: "{{ efs_dns }}"
+
+- name: Ensure EFS volume is mounted.
+  ansible.builtin.mount:
+    name: "{{ confluence.shared_home }}"
+    src: "{{ efs_dns }}"
+    fstype: efs
+    opts: tls
+    state: mounted
+
+- name: change ownership of mounted shared-home
+  ansible.builtin.file:
+    state: directory
+    path: "{{ confluence.shared_home }}"
+    owner: "{{ confluence.user }}"
+    group: "{{ confluence.group }}"
+    recurse: yes

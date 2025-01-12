@@ -1,0 +1,44 @@
+env: dev
+
+region:
+  name: us-east-1
+  zone1: us-east-1a
+  zone2: us-east-1b
+
+packages:
+  dnf:
+    - amazon-efs-utils
+    - amazon-ec2-utils
+    - fontconfig
+    - python3-pip
+    - postgresql16
+  pip:
+    - boto3
+    - psycopg2-binary
+
+confluence:
+  version: 9.2.0
+  jdk: 21
+  shortname: confl
+  frontend: web
+  backend: sync
+  log: /var/atlassian/confluence/logs/atlassian-confluence.log
+  shared_home: /var/atlassian/confluence/shared-home
+  local_home: /var/atlassian/confluence
+  install: /opt/atlassian/confluence
+  media: /softdepo
+  user: confluence
+  group: confluence
+  efs_tag: confluence
+  service: confluence
+
+s3:
+  bucket: software-lib
+  object: atlassian/confluence
+
+db:
+  instance_id: confluence
+  name: confluencedb
+  user: postgres
+  pwd: AQICAHhrvJMQc0F7yNbOWq789cm5RaOaL5B+N41EjXJEouE+HwHTa1+WbQ1tIqXJTZtwubupAAAAZjBkBgkqhkiG9w0BBwagVzBVAgEAMFAGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMYEeFSMSyWMvyYwqUAgEQgCNq1Ts1QBZmM24DUid8pWrabzXkG1v1mfvOVx5QkDdJk48z/w==
+  cluster: astrix

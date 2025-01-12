@@ -1,0 +1,21 @@
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for confluence
+
+- name: start confluence
+  ansible.builtin.service:
+    name: confluence
+    state: started
+  listen: "start confluence"
+
+- name: stop confluence
+  ansible.builtin.service:
+    name: confluence
+    state: stopped
+  listen: "stop confluence"
+
+- name: restart confluence
+  ansible.builtin.service:
+    name: confluence
+    state: restarted
+  listen: "restart confluence"

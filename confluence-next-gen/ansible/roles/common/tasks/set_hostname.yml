@@ -1,0 +1,23 @@
+---
+- name: Get the local ec2 instance id
+  ansible.builtin.shell: |
+    /usr/bin/ec2-metadata --instance-id \
+    | awk '{print $2}'
+  changed_when: false
+  register: cmd_output
+
+- name: Gather information about instance
+  amazon.aws.ec2_instance_info:
+    region: "{{ region.name }}"
+    instance_ids:
+      - "{{ cmd_output.stdout }}"
+  register: ec2_info
+
+- name: Display server name
+  ansible.builtin.debug:
+    msg: "server name: {{ ec2_info.instances[0]['tags']['Name'] }}"
+
+- name: set the hostname of os on ec2
+  ansible.builtin.hostname:
+    name: "{{ ec2_info.instances[0]['tags']['Name'] }}"
+    use: systemd

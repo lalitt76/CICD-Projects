@@ -1,0 +1,33 @@
+---
+- name: main playbook
+  hosts: all
+  become: yes
+  gather_facts: true
+  vars_files:
+    - env/default.yml
+  tasks:
+    - name: run the common role
+      include_role:
+        name: common
+
+- name: confluence playbook
+  hosts: confluence
+  become: yes
+  gather_facts: no
+  vars_files:
+    - env/default.yml
+  tasks:
+    - name: run the confluence role
+      include_role:
+        name: confluence
+
+#- name: synchrony playbook
+#  hosts: synchrony
+#  become: yes
+#  gather_facts: true
+#  vars_files:
+#    - env/default.yml
+#  tasks:
+#    - name: run the synchrony role
+#      include_role:
+#        name: synchrony
