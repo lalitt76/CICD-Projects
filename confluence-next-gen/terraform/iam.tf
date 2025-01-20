@@ -45,7 +45,23 @@ resource "aws_iam_policy" "confl-iam-policy" {
         Effect : "Allow",
         Resource : [
           "arn:aws:s3:::software-lib",
-          "arn:aws:s3:::software-lib/*"
+          "arn:aws:s3:::software-lib/*",
+          "arn:aws:s3:::bkt-terraform-state-lmt",
+          "arn:aws:s3:::bkt-terraform-state-lmt/*"
+        ]
+      },
+      {
+        Action : [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ],
+        Effect : "Allow",
+        Resource : [
+          "arn:aws:dynamodb:::table/terraform-lock-table"
         ]
       },
       {

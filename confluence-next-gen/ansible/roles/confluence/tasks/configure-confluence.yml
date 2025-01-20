@@ -30,7 +30,7 @@
         src: jdk_home.j2
         dest: "/etc/profile.d/jdk_home.sh"
 
-    - name: reload the profile.d script in linux
+    - name: load the profile.d jdk_home.sh script in linux
       ansible.builtin.shell: |
         source /etc/profile.d/jdk_home.sh
 

@@ -44,16 +44,16 @@ locals {
       volume_type      = var.ec2.volume_type
       root_device_size = var.ec2.root_device_size
     }
-//    "confl-jmp" = {
-//      sub_id           = module.vpc.pub_sub_01,
-//      ami-id           = var.ami-id.jump,
-//      inst_type        = var.ec2-type.jmp,
-//      sec_group        = aws_security_group.confl-sgs-stack[var.sg_keys.jmp].id
-//      role             = "jump"
-//      node_num         = "01"
-//      volume_type      = var.ec2.volume_type
-//      root_device_size = var.ec2.root_device_size
-//    }
+    //    "confl-jmp" = {
+    //      sub_id           = module.vpc.pub_sub_01,
+    //      ami-id           = var.ami-id.jump,
+    //      inst_type        = var.ec2-type.jmp,
+    //      sec_group        = aws_security_group.confl-sgs-stack[var.sg_keys.jmp].id
+    //      role             = "jump"
+    //      node_num         = "01"
+    //      volume_type      = var.ec2.volume_type
+    //      root_device_size = var.ec2.root_device_size
+    //    }
   }
 
   confluence = {
