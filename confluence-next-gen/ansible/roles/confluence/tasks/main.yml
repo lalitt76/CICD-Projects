@@ -17,6 +17,6 @@
   include_tasks: database-confluence.yml
   when: ec2_info.instances[0]['placement']['availability_zone'] == region.zone1
 
-- name: start confluence on secondary
-  include_tasks: secondary-confluence.yml
-  when: ec2_info.instances[0]['placement']['availability_zone'] == region.zone2
+#- name: start confluence on secondary
+#  include_tasks: secondary-confluence.yml
+#  when: ec2_info.instances[0]['placement']['availability_zone'] == region.zone2

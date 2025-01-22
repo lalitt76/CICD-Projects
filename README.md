@@ -10,10 +10,16 @@ https://confluence.atlassian.com/doc/installing-confluence-on-linux-from-archive
  and i db.pwd in ansible variable file
  6. update ansible inventory file as per your environment
  7. Following command to create DynamoDB table for terraform state lock
- > aws dynamodb create-table \
+ 
+> aws dynamodb create-table \
      --table-name terraform-lock-table \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+8. Make a connection to the load balancer after completion of ansible playbook
+9. Once you filled all the required forms and then wait to confluence to initialize 
+10. Copy confluence.cfg.xml from primary to secondary server (make sure user and group of confluence.cf.xml must be confluence on secondary)
+
+ 
  
  

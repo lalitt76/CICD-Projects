@@ -7,7 +7,7 @@ variable "infra_env" {
 # ssl url
 variable "domain" {
   type    = string
-  default = "confluence.thetyagi.com"
+  default = "www.thetyagi.com"
 }
 
 # infra zones aws_subnet.confl-pub-sub
@@ -219,8 +219,8 @@ variable "confl_ingress_sgs_vars_stack" {
     allow-http-from-all = {
       security_group               = "alb-sg"
       description                  = "ingress of load balancer for http"
-      from_port                    = 80
-      to_port                      = 80
+      from_port                    = 443
+      to_port                      = 443
       ip_protocol                  = "tcp"
       cidr_ipv4                    = "0.0.0.0/0"
       referenced_security_group_id = null
