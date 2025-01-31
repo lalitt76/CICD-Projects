@@ -7,7 +7,7 @@ data "aws_kms_secrets" "confl-secrets" {
 
 # Find a certificate that is issued
 data "aws_acm_certificate" "astrix-issued" {
-  domain   = var.domain
+  domain   = var.domain.fqdn
   statuses = ["ISSUED"]
 }
 

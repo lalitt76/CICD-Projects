@@ -1,0 +1,43 @@
+---
+- name: Get information about rds instance
+  amazon.aws.rds_instance_info:
+    region: "{{ region.name }}"
+    db_instance_identifier: "{{ db.instance_id }}"
+  register: db_info
+
+- name: set fact for rds endpoint address
+  ansible.builtin.set_fact:
+    db_instance_endpoint: "{{ db_info.instances[0]['endpoint']['address'] }}"
+
+- name: create synchrony user on synchrony servers
+  ansible.builtin.user:
+    name: "{{ synchrony.user }}"
+    password: "{{ synchrony.passwd }}" # Set the password otherwise service will fail to start
+    shell: /bin/bash  # set the user’s shell.
+
+- name: elevate synchrony user as sudoer
+  ansible.builtin.template:
+    src: synchrony-user.j2
+    dest: "/etc/sudoers.d/{{ synchrony.user }}"
+
+- name: create synchrony install directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.src }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    recurse: yes
+  loop:
+    - { src: "{{ synchrony.install }}", owner: "{{ synchrony.user }}", group: "{{ synchrony.group }}", mode: "u=rwx,go-wx" }
+
+- name: download synchrony package from s3 bucket
+  amazon.aws.s3_object:
+    region: "{{ region.name }}"
+    bucket: "{{ s3.bucket }}"
+    object: "{{ s3.object }}/{{ item }}"
+    dest: "{{ common.media }}/{{ item }}"
+    mode: get
+    overwrite: different # will not download file if file checksum match
+  loop:
+    - "synchrony-{{ synchrony.version }}.tar.gz"

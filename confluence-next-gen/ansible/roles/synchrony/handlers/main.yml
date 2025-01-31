@@ -1,3 +1,9 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # handlers file for synchrony
+
+- name: restart synchrony
+  ansible.builtin.service:
+    name: synchrony
+    state: restarted
+  listen: "restart synchrony"

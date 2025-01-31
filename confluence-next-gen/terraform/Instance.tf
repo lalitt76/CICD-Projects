@@ -3,7 +3,7 @@ module "vpc" {
 }
 
 resource "aws_instance" "confl-servers" {
-  for_each               = local.confluence
+  for_each               = local.servers
   ami                    = each.value.ami-id
   instance_type          = each.value.inst_type
   subnet_id              = each.value.sub_id

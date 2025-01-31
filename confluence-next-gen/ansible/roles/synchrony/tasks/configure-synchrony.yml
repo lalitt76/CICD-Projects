@@ -1,0 +1,53 @@
+---
+- name: checking synchrony start-up file to varify synchrony installation
+  ansible.builtin.stat:
+    path: "{{ synchrony.install }}/start-synchrony.sh"
+  register: check_sync_install
+
+- name: block to execute certain actions only after fresh installation synchrony
+  when: not check_sync_install.stat.exists
+  block:
+    - name: untar synchrony binary to synchrony installation directory
+      ansible.builtin.unarchive:
+        src: "{{ common.media }}/synchrony-{{ synchrony.version }}.tar.gz"
+        dest: "{{ synchrony.install }}"
+        owner: "{{ synchrony.user }}"
+        group: "{{ synchrony.group }}"
+        remote_src: yes
+        extra_opts:
+          - --strip-components=1
+
+    - name: copy synchrony env and start-synchrony.sh files to synchrony folder
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dst }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: "{{ synchrony.envfile }}.j2", dst: "{{ synchrony.install }}/.{{ synchrony.envfile }}", owner: "{{ synchrony.user }}", group: "{{ synchrony.group }}", mode: "+x" }
+        - { src: "start-synchrony.j2", dst: "{{synchrony.install}}/start-synchrony.sh", owner: "{{ synchrony.user }}", group: "{{ synchrony.group }}", mode: "0755" }
+
+    - name: load the imp variables into os memory
+      ansible.builtin.template:
+        src: set_db_env.j2
+        dest: "/etc/profile.d/set_db_env.sh"
+
+- name: create a synchrony service file
+  ansible.builtin.template:
+    src: "synchrony-service.j2"
+    dest: "/usr/lib/systemd/system/{{ synchrony.service }}.service"
+    mode: "0644"
+  register: service_status
+
+- name: enable synchrony service
+  ansible.builtin.systemd_service:
+    name: "{{ synchrony.service }}.service"
+    enabled: true
+    daemon_reload: true
+  when: service_status.changed
+  notify:
+    - restart synchrony
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers

@@ -2,7 +2,7 @@
 ---
 # tasks file for common
 - name: include task file to install common softwares
-  include_tasks: install.yml
+  include_tasks: install_common_packages.yml
 
 - name: include task file to execute common os related tasks
   include_tasks: set_hostname.yml

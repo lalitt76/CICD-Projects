@@ -1,40 +1,4 @@
 ---
-- name: make confluence and jdk binary executable
-  ansible.builtin.file:
-    path: "{{ confluence.media }}/{{ item }}"
-    mode: +x
-  loop:
-    - "atlassian-confluence-{{ confluence.version }}.tar"
-    - "jdk-{{ confluence.jdk }}_linux-x64_bin.rpm"
-
-- name: install jdk rpm package
-  ansible.builtin.dnf:
-    name: "{{ confluence.media }}/jdk-{{ confluence.jdk }}_linux-x64_bin.rpm"
-    state: present
-    disable_gpg_check: true
-  register: jdk_installation
-
-- name: block to execute certain actions only after fresh installation of jdk
-  when: jdk_installation.changed
-  block:
-    - name: check the java installation folder
-      ansible.builtin.shell: |
-        /usr/bin/readlink -f $(which java)
-      register: java_output
-
-    - name: set java home environment
-      ansible.builtin.set_fact: jvm_home="{{ java_output.stdout[:-8] }}"
-
-    - name: export the java_home environment
-      ansible.builtin.template:
-        src: jdk_home.j2
-        dest: "/etc/profile.d/jdk_home.sh"
-
-    - name: load the profile.d jdk_home.sh script in linux
-      ansible.builtin.shell: |
-        source /etc/profile.d/jdk_home.sh
-
-
 - name: checking confluence start-up file to varify confluence installation
   ansible.builtin.stat:
     path: "{{ confluence.install }}/bin/start-confluence.sh"
@@ -42,7 +6,7 @@
 
 - name: untar confluence binary to confluence installation directory
   ansible.builtin.unarchive:
-    src: "{{ confluence.media }}/atlassian-confluence-{{ confluence.version }}.tar"
+    src: "{{ common.media }}/atlassian-confluence-{{ confluence.version }}.tar"
     dest: "{{ confluence.install }}"
     owner: "{{ confluence.user }}"
     group: "{{ confluence.group }}"
@@ -57,6 +21,13 @@
     line: "confluence.home={{ confluence.local_home }}"
     state: present
 
+- name: update the setenv.bat file to add the synchrony url
+  ansible.builtin.lineinfile:
+    path: "{{ confluence.install }}/bin/setenv.sh"
+    insertbefore: '^export CATALINA_OPTS'
+    line: 'CATALINA_OPTS="-Dsynchrony.service.url=http://{{ confluence.url }}/synchrony/v1 ${CATALINA_OPTS}"'
+    state: present
+
 - name: create a confluence service file
   ansible.builtin.template:
     src: "confluence-service.j2"
@@ -68,4 +39,5 @@
   ansible.builtin.systemd_service:
     name: "{{ confluence.service }}.service"
     enabled: true
+    daemon_reload: true
   when: service_status.changed

@@ -17,7 +17,7 @@ https://confluence.atlassian.com/doc/installing-confluence-on-linux-from-archive
      --key-schema AttributeName=LockID,KeyType=HASH \
      --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 8. Make a connection to the load balancer after completion of ansible playbook
-9. Once you filled all the required forms and then wait to confluence to initialize 
+9. Once you filled all the required forms and then wait to confluence to initialize. Use confluencedb as database name when setting up your database 
 10. Copy confluence.cfg.xml from primary to secondary server (make sure user and group of confluence.cf.xml must be confluence on secondary)
 
  

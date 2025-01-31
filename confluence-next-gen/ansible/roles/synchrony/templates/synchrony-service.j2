@@ -1,0 +1,15 @@
+[Unit]
+Description=synchrony
+After=network.target
+
+[Service]
+Type=forking
+User={{ synchrony.user }}
+WorkingDirectory={{ synchrony.install }}
+PIDFile={{ synchrony.install }}/synchrony.pid
+ExecStart={{ synchrony.install }}/start-synchrony.sh
+ExecStop={{ synchrony.install }}/stop-synchrony.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

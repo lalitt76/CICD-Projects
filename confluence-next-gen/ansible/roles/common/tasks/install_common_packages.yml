@@ -1,0 +1,75 @@
+---
+- name: update all dnf packages on ec2 instance
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+
+- name: install a list of common dnf packages
+  ansible.builtin.dnf:
+    name: "{{ packages.dnf }}"
+    state: present
+  register: dnf_common
+
+- name: clean dnf metadata cache
+  ansible.builtin.command: dnf clean metadata
+  when: dnf_common.changed
+
+- name: install pip packages
+  ansible.builtin.pip: "name={{ item }} state=present"
+  with_items: "{{ packages.pip }}"
+
+- name: create media directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.src }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    recurse: yes
+  loop:
+    - { src: "{{common.media}}", owner: "root", group: "root", mode: "0755" }
+
+- name: download jdk installation package from s3 bucket
+  amazon.aws.s3_object:
+    region: "{{ region.name }}"
+    bucket: "{{ s3.bucket }}"
+    object: "{{ s3.object }}/{{ item }}"
+    dest: "{{ common.media }}/{{ item }}"
+    mode: get
+    overwrite: different # will not download file if file checksum match
+  loop:
+    - "jdk-{{ common.jdk }}_linux-x64_bin.rpm"
+
+- name: make jdk installation package as executable
+  ansible.builtin.file:
+    path: "{{ common.media }}/{{ item }}"
+    mode: +x
+  loop:
+    - "jdk-{{ common.jdk }}_linux-x64_bin.rpm"
+
+- name: install jdk rpm package
+  ansible.builtin.dnf:
+    name: "{{ common.media }}/jdk-{{ common.jdk }}_linux-x64_bin.rpm"
+    state: present
+    disable_gpg_check: true
+  register: jdk_installation
+
+- name: block to execute certain actions only after fresh installation of jdk
+  when: jdk_installation.changed
+  block:
+    - name: check the java installation folder
+      ansible.builtin.shell: |
+        /usr/bin/readlink -f $(which java)
+      register: java_output
+
+    - name: set java home environment
+      ansible.builtin.set_fact: jvm_home="{{ java_output.stdout[:-8] }}"
+
+    - name: export the java_home environment
+      ansible.builtin.template:
+        src: jdk_home.j2
+        dest: "/etc/profile.d/jdk_home.sh"
+
+    - name: load the profile.d jdk_home.sh script in linux
+      ansible.builtin.shell: |
+        source /etc/profile.d/jdk_home.sh

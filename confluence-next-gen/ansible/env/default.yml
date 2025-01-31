@@ -16,9 +16,13 @@ packages:
     - boto3
     - psycopg2-binary
 
+common:
+  media: /opt/media
+  jdk: 21
+
+
 confluence:
   version: 9.2.0
-  jdk: 21
   shortname: confl
   frontend: web
   backend: sync
@@ -26,19 +30,33 @@ confluence:
   shared_home: /var/atlassian/confluence/shared-home
   local_home: /var/atlassian/confluence
   install: /opt/atlassian/confluence
-  media: /softdepo
   user: confluence
   group: confluence
   efs_tag: confluence
   service: confluence
+  url: confluence.thetyagi.com
+
+synchrony:
+  version: 9.2.0
+  install: /opt/atlassian/synchrony
+  user: synchrony
+  group: synchrony
+  envfile: synchronyenv
+  service: synchrony
+  passwd: QWRtaW4xMjMK
+  tag: Role
+  tagvalue: synchrony
+  db_driver: org.postgresql_postgresql-42.7.4.jar
+  jar_path: synchrony-standalone.jar
+
 
 s3:
   bucket: software-lib
   object: atlassian/confluence
 
 db:
-  instance_id: confluence
-  name: confluencedb
+  instance_id: confluence # Name of db instance
+  name: confluencedb # Name of database on db instance
   user: postgres
   pwd: AQICAHhrvJMQc0F7yNbOWq789cm5RaOaL5B+N41EjXJEouE+HwHTa1+WbQ1tIqXJTZtwubupAAAAZjBkBgkqhkiG9w0BBwagVzBVAgEAMFAGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMYEeFSMSyWMvyYwqUAgEQgCNq1Ts1QBZmM24DUid8pWrabzXkG1v1mfvOVx5QkDdJk48z/w==
   cluster: astrix

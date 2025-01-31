@@ -1,3 +1,12 @@
 #SPDX-License-Identifier: MIT-0
+# setenv.bat
+# set CATALINA_OPTS=%START_CONFLUENCE_JAVA_OPTS% %CATALINA_OPTS%
+# -Dsynchrony.service.url=http://confluence.thetyagi.com/synchrony/v1
 ---
 # tasks file for synchrony
+- name: prepare synchrony servers for installing synchrony
+  include_tasks: prepare-synchrony.yml
+
+- name: configure synchrony servers
+  include_tasks: configure-synchrony.yml
+

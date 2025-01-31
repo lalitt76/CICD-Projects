@@ -4,10 +4,15 @@ variable "infra_env" {
   default = "dev"
 }
 
-# ssl url
+# confluence urls
 variable "domain" {
-  type    = string
-  default = "www.thetyagi.com"
+  type = map(string)
+  default = {
+    name       = "thetyagi.com"
+    fqdn       = "www.thetyagi.com"
+    confluence = "confluence.thetyagi.com"
+    synchrony  = "synchrony.thetyagi.com"
+  }
 }
 
 # infra zones aws_subnet.confl-pub-sub
@@ -33,8 +38,8 @@ variable "ami-id" {
 variable "ec2-type" {
   type = map(string)
   default = {
-    web = "t2.large" # "t2.medium"
-    syn = "t2.micro"
+    web = "t2.medium" # "t2.medium" "t2.large"
+    syn = "t2.medium"
     jmp = "t2.micro"
   }
 }
@@ -135,9 +140,18 @@ variable "confl_ingress_sgs_vars_stack" {
       cidr_ipv4                    = "67.80.148.143/32"
       referenced_security_group_id = null
     },
-    allow-ssh-from-my-ip = {
+    allow-ssh-web-from-my-ip = {
       security_group               = "web-sg"
-      description                  = "ingress for confl jump station"
+      description                  = "ingress for ssh from my ip to web"
+      from_port                    = 22
+      to_port                      = 22
+      ip_protocol                  = "tcp"
+      cidr_ipv4                    = "67.80.148.143/32"
+      referenced_security_group_id = null
+    },
+    allow-ssh-sync-from-my-ip = {
+      security_group               = "syn-sg"
+      description                  = "ingress for ssh from my ip to sync"
       from_port                    = 22
       to_port                      = 22
       ip_protocol                  = "tcp"
@@ -219,6 +233,15 @@ variable "confl_ingress_sgs_vars_stack" {
     allow-http-from-all = {
       security_group               = "alb-sg"
       description                  = "ingress of load balancer for http"
+      from_port                    = 80
+      to_port                      = 80
+      ip_protocol                  = "tcp"
+      cidr_ipv4                    = "0.0.0.0/0"
+      referenced_security_group_id = null
+    },
+    allow-https-from-all = {
+      security_group               = "alb-sg"
+      description                  = "ingress of load balancer for https"
       from_port                    = 443
       to_port                      = 443
       ip_protocol                  = "tcp"
@@ -319,8 +342,8 @@ variable "confl_egress_sgs_vars_stack" {
 variable "rds" {
   type = map(any)
   default = {
-    db_instance     = "db.t3.medium" # "db.t3.micro"
-    identifier      = "confluence"
+    db_instance     = "db.t3.medium" # "db.t3.micro" "db.t3.medium"
+    identifier      = "confluence"   # Name of db instance
     eng             = "postgres"
     eng_ver         = "16.3"
     storage_size    = 12
